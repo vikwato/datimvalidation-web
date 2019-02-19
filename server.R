@@ -23,12 +23,12 @@ shinyServer(function(input, output) {
     messages<-""
     if (is.null(inFile)) return(NULL)
     
+    
     withProgress(message = 'Validating file', value = 0,{
+      
       incProgress(0.1, detail = ("Loading metadata"))
-      datimvalidation::loadSecrets("/home/jason/.secrets/datim-dev-de.json")
-      ds<-getCurrentMERDataSets()
-      foo<-getValidOperatingUnits()
-      ous<-list(setNames(foo$id,foo$name))
+      ds<-getCurrentMERDataSets(type = input$ds_type)
+      
       incProgress(0.2, detail = ("Parsing data"))
       d <- tryCatch(
         datimvalidation::d2Parser(

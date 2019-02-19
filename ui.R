@@ -18,6 +18,7 @@ fluidPage(
                                               "Code" = "code",
                                               "Name" = "name"
       ),selected = "id"),
+      selectInput("ds_type","Dataset type:",c("Results" = "RESULTS","Targets"="TARGETS")),
       checkboxInput("header", "CSV Header", TRUE),
       fileInput("file1", "Choose CSV File",
                 accept = c(
