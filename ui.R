@@ -1,41 +1,68 @@
 library(shiny)
 source("./utils.R")
-fluidPage(
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("type", "Type:",
-                  c("CSV" = "csv",
-                    "JSON" = "json",
-                    "XML" = "xml")),
-      selectInput("ou","Operating Unit",ous),
-      selectInput("de_scheme","Data element ID scheme:", c("ID" = "id","Code" = "code",
-                                                           "Name" = "name"
-      ),selected = "id"),
-      selectInput("ou_scheme","Orgunit ID scheme:", c("ID" = "id","Code" = "code",
-                                                      "Name" = "name"
-      ),selected = "id"),
-      selectInput("id_scheme","ID scheme:", c("ID" = "id",
-                                              "Code" = "code",
-                                              "Name" = "name"
-      ),selected = "id"),
-      selectInput("ds_type","Dataset type:",c("Results" = "RESULTS","Targets"="TARGETS")),
-      checkboxInput("header", "CSV Header", TRUE),
-      fileInput("file1", "Choose CSV File",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  "application/json",
-                  "application/xml",
-                  ".csv",
-                  ".json",
-                  ".xml")
+fluidPage(sidebarLayout(
+  sidebarPanel(
+    selectInput("type", "Type:",
+                c(
+                  "CSV" = "csv",
+                  "JSON" = "json",
+                  "XML" = "xml"
+                )),
+    selectInput("ou", "Operating Unit", ous),
+    selectInput(
+      "de_scheme",
+      "Data element ID scheme:",
+      c(
+        "ID" = "id",
+        "Code" = "code",
+        "Name" = "name"
+      ),
+      selected = "id"
+    ),
+    selectInput(
+      "ou_scheme",
+      "Orgunit ID scheme:",
+      c(
+        "ID" = "id",
+        "Code" = "code",
+        "Name" = "name"
+      ),
+      selected = "id"
+    ),
+    selectInput(
+      "id_scheme",
+      "ID scheme:",
+      c(
+        "ID" = "id",
+        "Code" = "code",
+        "Name" = "name"
+      ),
+      selected = "id"
+    ),
+    selectInput(
+      "ds_type",
+      "Dataset type:",
+      c("Results" = "RESULTS", "Targets" = "TARGETS")
+    ),
+    checkboxInput("header", "CSV Header", TRUE),
+    fileInput(
+      "file1",
+      "Choose data file:",
+      accept = c(
+        "text/csv",
+        "text/comma-separated-values,text/plain",
+        "application/json",
+        "application/xml",
+        ".csv",
+        ".json",
+        ".xml"
       )
     ),
-    mainPanel(
-      tabsetPanel(type="tabs",
-                  tabPanel("Messages",textOutput("messages")),
-                  tabPanel("Output", tableOutput("contents"))
-      ) 
-    )
-  )
-)
+    actionButton("go", "Validate!")
+  ),
+  mainPanel(tabsetPanel(
+    type = "tabs",
+    tabPanel("Output", tableOutput("contents")),
+    tabPanel("Messages",   tags$ul(uiOutput('messages')))
+  ))
+))
