@@ -38,7 +38,7 @@ shinyServer(function(input, output) {
     shinyjs::enable("ds_type")
     shinyjs::enable("file1")
     shinyjs::enable("header")
-    shinyjs::enable("validate")
+    #shinyjs::enable("validate")
     shinyjs::enable("downloadData")
   }
   
