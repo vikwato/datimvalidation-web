@@ -2,6 +2,7 @@ library(shiny)
 source("./utils.R")
 fluidPage(sidebarLayout(
   sidebarPanel(
+    shinyjs::useShinyjs(),
     selectInput("type", "Type:",
                 c(
                   "CSV" = "csv",
@@ -58,7 +59,8 @@ fluidPage(sidebarLayout(
         ".xml"
       )
     ),
-    actionButton("go", "Validate!")
+    tags$hr(),
+    actionButton("validate","Validate")
   ),
   mainPanel(tabsetPanel(
     type = "tabs",

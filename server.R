@@ -2,10 +2,21 @@ library(shiny)
 
 
 shinyServer(function(input, output) {
-
+  shinyjs::disable("validate")
+  ready <- reactiveValues(ok = FALSE)
+  
+  observeEvent(input$file1, {
+    shinyjs::enable("validate")
+    ready$ok <- FALSE
+  }) 
+  
+  observeEvent(input$validate, {
+    shinyjs::disable("validate")
+    ready$ok <- TRUE
+  })  
   
   output$contents <- renderDataTable({
-    
+    if (!ready$ok) {return(NULL)}
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, it will be a data frame with 'name',
     # 'size', 'type', and 'datapath' columns. The 'datapath'
@@ -38,6 +49,9 @@ shinyServer(function(input, output) {
           w
         }
       )
+      #Reset the button to force upload again
+      shinyjs::reset("file1")
+
       
       if (inherits(d, "simpleWarning")) {
         output$messages <- renderUI({
