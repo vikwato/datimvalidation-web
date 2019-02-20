@@ -1,5 +1,5 @@
   require(datimvalidation)
   options(shiny.maxRequestSize=30*1024^2)
-  datimvalidation::loadSecrets("/opt/dhis2/dish.json")
+  datimvalidation::loadSecrets("dish.json")
   foo<-getValidOperatingUnits()
   ous<-setNames(foo$id,foo$name)

@@ -33,7 +33,7 @@ shinyServer(function(input, output) {
       
       incProgress(0.1, detail = ("Loading metadata"))
       ds<-getCurrentMERDataSets(type = input$ds_type)
-      datimvalidation::loadSecrets("/opt/dhis2/dish.json")      
+      datimvalidation::loadSecrets("dish.json")      
       incProgress(0.1, detail = ("Parsing data"))
       d <- tryCatch(
         datimvalidation::d2Parser(
@@ -51,11 +51,11 @@ shinyServer(function(input, output) {
       )
       #Reset the button to force upload again
       shinyjs::reset("file1")
-
       
       if (inherits(d, "simpleWarning")) {
         output$messages <- renderUI({
           tags$strong(d$message)})
+        
         return(NULL) 
       } else {
         messages<-append("No problems found during file parsing.",messages)
