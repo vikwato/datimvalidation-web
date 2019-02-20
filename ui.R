@@ -1,6 +1,12 @@
 library(shiny)
 source("./utils.R")
-fluidPage(sidebarLayout(
+fluidPage(
+  tags$head(tags$style(".shiny-notification {
+  position: fixed;
+  top: 10%;
+  left: 33%;
+  right: 33%;}")),
+  sidebarLayout(
   sidebarPanel(
     shinyjs::useShinyjs(),
     selectInput("type", "Type:",
