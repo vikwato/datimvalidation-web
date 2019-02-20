@@ -196,8 +196,19 @@ shinyServer(function(input, output) {
       }
       
       incProgress(0.1, detail = ("Validating data"))
-      vr_rules<-validateData(d,organisationUnit = input$ou,datasets = ds)
       
+      if ( Sys.info()['sysname'] == "Linux") {
+        
+       ncores <- parallel::detectCores() - 1
+       doMC::registerDoMC(cores=ncores)
+       is_parallel<-TRUE
+       
+      } else {
+        is_parallel<-FALSE
+      }
+      vr_rules<-validateData(d,organisationUnit = input$ou,
+                             datasets = ds,
+                             parallel = is_parallel)
       
       #If there are any validation rule violations, put them in the output
       if  ( NROW(vr_rules) > 0 )  {
