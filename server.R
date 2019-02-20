@@ -85,6 +85,28 @@ shinyServer(function(input, output) {
       } else {
         messages<-append("No problems found during file parsing.",messages)
       }
+      
+      
+      #Duplicate check
+      incProgress(0.1, detail = ("Checking for duplicate records."))
+      
+      dup_check <- getExactDuplicates(d)
+      
+      if (inherits(dup_check, "data.frame") & NROW(dup_check) > 0) {
+        output$messages <-  renderUI({
+          tags$strong(
+            paste(
+              paste( NROW(dup_check)," duplicate values found.")
+            )
+          )
+        })
+        enableUI()
+        shinyjs::show("downloadData")
+        return( dup_check ) 
+      } else {
+        messages<-append("No duplicate records detected.",messages)
+      }
+      
       incProgress(0.1, detail = ("Checking data element/orgunit associations"))
       de_check <-
         checkDataElementOrgunitValidity(
