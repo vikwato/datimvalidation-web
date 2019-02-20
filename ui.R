@@ -62,7 +62,7 @@ fluidPage(sidebarLayout(
   ),
   mainPanel(tabsetPanel(
     type = "tabs",
-    tabPanel("Output", tableOutput("contents")),
+    tabPanel("Output", dataTableOutput("contents")),
     tabPanel("Messages",   tags$ul(uiOutput('messages')))
   ))
 ))

@@ -4,7 +4,7 @@ library(shiny)
 shinyServer(function(input, output) {
 
   
-  output$contents <- renderTable({
+  output$contents <- renderDataTable({
     
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, it will be a data frame with 'name',
@@ -61,12 +61,12 @@ shinyServer(function(input, output) {
           tags$strong(
             paste(
               NROW(de_check),
-              "invalid data element/orgunit associations found! Returning first 100."
+              "invalid data element/orgunit associations found!"
             )
           )
         })
           
-        return( head(de_check,100) ) 
+        return( de_check ) 
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
       }
@@ -81,11 +81,11 @@ shinyServer(function(input, output) {
           tags$strong(
             paste(
               NROW(ds_ou_check),
-              "invalid data element/disagg associations found! Displaying first 100."
+              "invalid data element/disagg associations found!"
             )
           )
         })
-        return(head(ds_ou_check,100)) 
+        return( ds_ou_check ) 
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
       }
@@ -99,11 +99,11 @@ shinyServer(function(input, output) {
         output$messages <-  renderUI({
           tags$strong(
             paste(
-              paste( NROW(vt_check)," invalid values found. Displaying first 100.")
+              paste( NROW(vt_check)," invalid values found.")
             )
           )
         })
-        return( head(vt_check,100) ) 
+        return( vt_check ) 
       } else {
         messages<-append("Value types are valid.",messages)
       }
@@ -117,12 +117,12 @@ shinyServer(function(input, output) {
         output$messages <-  renderUI({
           tags$strong(
             paste(
-              paste( NROW(neg_check)," negatve values found. Displaying first 100.")
+              paste( NROW(neg_check)," negatve values found.")
             )
           )
         })
         
-        return(head(neg_check,100))
+        return( neg_check )
       } else {
         messages<-append("No negative values found.",messages)
       }
@@ -138,12 +138,12 @@ shinyServer(function(input, output) {
         output$messages <-  renderUI({
           tags$strong(
             paste(
-              paste( NROW(mech_check)," invalid mechanisms found. Displaying first 100.")
+              paste( NROW(mech_check)," invalid mechanisms found.")
             )
           )
         })
         
-        return(head(mech_check,100)) 
+        return( mech_check ) 
       } else {
         messages<-append("All mechanisms are valid.",messages)
       }
@@ -158,12 +158,12 @@ shinyServer(function(input, output) {
         output$messages <-  renderUI({
           tags$strong(
             paste(
-              paste( NROW(vr_rules)," validation rule violations found!. Displaying first 100.")
+              paste( NROW(vr_rules)," validation rule violations found!")
             )
           )
         })
 
-      return(head(vr_rules[,c("name","ou_name","period","mech_code","formula")],100)) } 
+      return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
       
       else {
         messages<-append( "No validation rule violations found", messages)
