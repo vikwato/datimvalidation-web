@@ -3,6 +3,7 @@ library(shiny)
 
 shinyServer(function(input, output) {
   shinyjs::disable("validate")
+  shinyjs::hide("downloadData")
   ready <- reactiveValues(ok = FALSE)
   
   observeEvent(input$file1, {
@@ -15,13 +16,36 @@ shinyServer(function(input, output) {
     ready$ok <- TRUE
   })  
   
-  output$contents <- renderDataTable({
+  disableUI<-function(){
+    shinyjs::disable("type")
+    shinyjs::disable("ou")
+    shinyjs::disable("ou_scheme")
+    shinyjs::disable("id_scheme")
+    shinyjs::disable("ds_type")
+    shinyjs::disable("file1")
+    shinyjs::disable("header")
+    shinyjs::disable("validate")
+    shinyjs::disable("downloadData")
+  }
+  
+  enableUI<-function(){
+    shinyjs::enable("type")
+    shinyjs::enable("ou")
+    shinyjs::enable("ou_scheme")
+    shinyjs::enable("id_scheme")
+    shinyjs::enable("ds_type")
+    shinyjs::enable("file1")
+    shinyjs::disable("header")
+    shinyjs::enable("validate")
+    shinyjs::enable("downloadData")
+  }
+  
+  
+  validate<-function() {
+    
     if (!ready$ok) {return(NULL)}
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
+    #Lock the UI
+    disableUI()
     inFile <- input$file1
     messages<-""
     
@@ -55,7 +79,7 @@ shinyServer(function(input, output) {
       if (inherits(d, "simpleWarning")) {
         output$messages <- renderUI({
           tags$strong(d$message)})
-        
+        enableUI()
         return(NULL) 
       } else {
         messages<-append("No problems found during file parsing.",messages)
@@ -79,7 +103,8 @@ shinyServer(function(input, output) {
             )
           )
         })
-          
+        enableUI()
+        shinyjs::show("downloadData")
         return( de_check ) 
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
@@ -99,6 +124,8 @@ shinyServer(function(input, output) {
             )
           )
         })
+        enableUI()
+        shinyjs::show("downloadData")
         return( ds_ou_check ) 
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
@@ -117,6 +144,8 @@ shinyServer(function(input, output) {
             )
           )
         })
+        enableUI()
+        shinyjs::show("downloadData")
         return( vt_check ) 
       } else {
         messages<-append("Value types are valid.",messages)
@@ -135,7 +164,8 @@ shinyServer(function(input, output) {
             )
           )
         })
-        
+        enableUI()
+        shinyjs::show("downloadData")
         return( neg_check )
       } else {
         messages<-append("No negative values found.",messages)
@@ -145,7 +175,7 @@ shinyServer(function(input, output) {
       incProgress(0.1, detail = ("Checking mechanisms."))
       
       mech_check <-
-          checkMechanismValidity(data = d, organisationUnit = input$ou,return_violations=TRUE)
+        checkMechanismValidity(data = d, organisationUnit = input$ou,return_violations=TRUE)
       
       if (inherits(mech_check, "data.frame")) {
         
@@ -156,7 +186,8 @@ shinyServer(function(input, output) {
             )
           )
         })
-        
+        enableUI()
+        shinyjs::show("downloadData")
         return( mech_check ) 
       } else {
         messages<-append("All mechanisms are valid.",messages)
@@ -176,19 +207,32 @@ shinyServer(function(input, output) {
             )
           )
         })
-
-      return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
+        enableUI()
+        shinyjs::show("downloadData")
+        return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
       
       else {
         messages<-append( "No validation rule violations found", messages)
-
+        
         output$messages <-renderUI({
           lapply(messages,function(x) tags$li(x))
         })
+        enableUI()
         return(data.frame(status="OK"))
       }
     })
     
-  })
+    
+  }
   
+  validation_results <- reactive({ validate() })
+  
+  output$contents <- renderDataTable({ validation_results() })
+  
+  output$downloadData <- downloadHandler(
+    filename = "validation_results.csv",
+    content = function(file) {
+      write.csv( validation_results(), file, row.names = FALSE)
+    }
+  )
 })

@@ -60,7 +60,8 @@ fluidPage(sidebarLayout(
       )
     ),
     tags$hr(),
-    actionButton("validate","Validate")
+    actionButton("validate","Validate"),
+    downloadButton("downloadData", "Download validation results")
   ),
   mainPanel(tabsetPanel(
     type = "tabs",
