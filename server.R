@@ -1,4 +1,6 @@
 library(shiny)
+library(shinyjs)
+library(openxlsx)
 
 
 shinyServer(function(input, output) {
@@ -61,7 +63,7 @@ shinyServer(function(input, output) {
       ds<-getCurrentMERDataSets(type = input$ds_type)
       datimvalidation::loadSecrets("dish.json")      
       incProgress(0.1, detail = ("Parsing data"))
-      d <- tryCatch(
+      d <- 
         datimvalidation::d2Parser(
           filename = inFile$datapath,
           organisationUnit = input$ou,
@@ -69,20 +71,17 @@ shinyServer(function(input, output) {
           dataElementIdScheme = input$de_scheme,
           orgUnitIdScheme = input$ou_scheme,
           idScheme = input$id_scheme,
-          csv_header = input$header
-        ),
-        warning = function(w) {
-          w
-        }
-      )
+          csv_header = input$header)
+        
       #Reset the button to force upload again
       shinyjs::reset("file1")
       
-      if (inherits(d, "simpleWarning")) {
+      if (inherits(d, "list")) {
         output$messages <- renderUI({
-          tags$strong(d$message)})
+          tags$strong("There were errors while parsing the file. Download the validation results for details")})
+        shinyjs::show("downloadData")
         enableUI()
-        return(NULL) 
+        return(d) 
       } else {
         messages<-append("No problems found during file parsing.",messages)
       }
@@ -240,12 +239,17 @@ shinyServer(function(input, output) {
   
   validation_results <- reactive({ validate() })
   
-  output$contents <- renderDataTable({ validation_results() })
+  output$contents <- renderDataTable({ 
+    
+    results<-validation_results() 
+    if ( inherits(results, "data.frame") ) { results }
+    else { NULL }
+    })
   
   output$downloadData <- downloadHandler(
-    filename = "validation_results.csv",
+    filename = "validation_results.xlsx",
     content = function(file) {
-      write.csv( validation_results(), file, row.names = FALSE)
+      openxlsx::write.xlsx(validation_results(), file = file)
     }
   )
 })
