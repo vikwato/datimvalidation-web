@@ -61,9 +61,6 @@ shinyServer(function(input, output, session) {
         )
       )
     } else {
-      foo<-getValidOperatingUnits()
-      ous<-setNames(foo$id,foo$name)
-      
       fluidPage(
         tags$head(tags$style(".shiny-notification {
                              position: fixed;
@@ -148,6 +145,8 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in<-FALSE
     user_input$authenticated <-DHISLogin(input$server,input$user_name,input$password)
+    foo<-getValidOperatingUnits()
+    ous<-setNames(foo$id,foo$name)
   })   
   
   # password entry UI componenets:
