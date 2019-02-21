@@ -61,6 +61,9 @@ shinyServer(function(input, output, session) {
         )
       )
     } else {
+      foo<-getValidOperatingUnits()
+      ous<-setNames(foo$id,foo$name)
+      
       fluidPage(
         tags$head(tags$style(".shiny-notification {
                              position: fixed;
@@ -161,6 +164,7 @@ shinyServer(function(input, output, session) {
   validate<-function() {
     
     if (!ready$ok) {return(NULL)}
+    
     #Lock the UI
     disableUI()
     inFile <- input$file1
@@ -174,7 +178,6 @@ shinyServer(function(input, output, session) {
       
       incProgress(0.1, detail = ("Loading metadata"))
       ds<-getCurrentMERDataSets(type = input$ds_type)
-      datimvalidation::loadSecrets("dish.json")      
       incProgress(0.1, detail = ("Parsing data"))
       d <- 
         datimvalidation::d2Parser(
