@@ -3,7 +3,9 @@ library(shinyjs)
 library(openxlsx)
 
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
+  
+  
   shinyjs::disable("validate")
   shinyjs::hide("downloadData")
   ready <- reactiveValues(ok = FALSE)
@@ -43,6 +45,117 @@ shinyServer(function(input, output) {
     #shinyjs::enable("validate")
     shinyjs::enable("downloadData")
   }
+  
+  output$ui <- renderUI({
+    
+    if (user_input$authenticated == FALSE) {
+      ##### UI code for login page
+      fluidPage(
+        fluidRow(
+          column(width = 2, offset = 5,
+                 br(), br(), br(), br(),
+                 uiOutput("server"),
+                 uiOutput("uiLogin"),
+                 uiOutput("pass")
+          )
+        )
+      )
+    } else {
+      fluidPage(
+        tags$head(tags$style(".shiny-notification {
+                             position: fixed;
+                             top: 10%;
+                             left: 33%;
+                             right: 33%;}")),
+        sidebarLayout(
+          sidebarPanel(
+            shinyjs::useShinyjs(),
+            selectInput("type", "Type:",
+                        c(
+                          "CSV" = "csv",
+                          "JSON" = "json",
+                          "XML" = "xml"
+                        )),
+            selectInput("ou", "Operating Unit", ous),
+            selectInput(
+              "de_scheme",
+              "Data element ID scheme:",
+              c(
+                "ID" = "id",
+                "Code" = "code",
+                "Name" = "name"
+              ),
+              selected = "id"
+            ),
+            selectInput(
+              "ou_scheme",
+              "Orgunit ID scheme:",
+              c(
+                "ID" = "id",
+                "Code" = "code",
+                "Name" = "name"
+              ),
+              selected = "id"
+            ),
+            selectInput(
+              "id_scheme",
+              "ID scheme:",
+              c(
+                "ID" = "id",
+                "Code" = "code",
+                "Name" = "name"
+              ),
+              selected = "id"
+            ),
+            selectInput(
+              "ds_type",
+              "Dataset type:",
+              c("Results" = "RESULTS", "Targets" = "TARGETS")
+            ),
+            checkboxInput("header", "CSV Header", TRUE),
+            fileInput(
+              "file1",
+              "Choose data file:",
+              accept = c(
+                "text/csv",
+                "text/comma-separated-values,text/plain",
+                "application/json",
+                "application/xml",
+                ".csv",
+                ".json",
+                ".xml"
+              )
+            ),
+            tags$hr(),
+            actionButton("validate","Validate"),
+            downloadButton("downloadData", "Download validation results")
+          ),
+          mainPanel(tabsetPanel(
+            type = "tabs",
+            tabPanel("Output", dataTableOutput("contents")),
+            tabPanel("Messages",   tags$ul(uiOutput('messages')))
+          ))
+        ))
+  }
+})
+  
+  
+  user_input <- reactiveValues(authenticated = FALSE, status = "")
+  
+  observeEvent(input$login_button, {
+    is_logged_in<-FALSE
+    user_input$authenticated <-DHISLogin(input$server,input$user_name,input$password)
+  })   
+  
+  # password entry UI componenets:
+  #   username and password text fields, login button
+  output$uiLogin <- renderUI({
+    wellPanel(
+      textInput("user_name", "User Name:",width = "600px"),
+      passwordInput("password", "Password:",width = "600px"),
+      actionButton("login_button", "Log in")
+    )
+  })
   
   
   validate<-function() {
@@ -233,13 +346,9 @@ shinyServer(function(input, output) {
       
       #If there are any validation rule violations, put them in the output
       if  ( NROW(vr_rules) > 0 )  {
-        
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              paste( NROW(vr_rules)," validation rule violations found!")
-            )
-          )
+        messages<-append( paste( NROW(vr_rules)," validation rule violations found!"),messages)
+        output$messages <-renderUI({
+          lapply(messages,function(x) tags$li(x))
         })
         enableUI()
         shinyjs::show("downloadData")
@@ -258,6 +367,7 @@ shinyServer(function(input, output) {
     
     
   }
+  
   
   validation_results <- reactive({ validate() })
   
