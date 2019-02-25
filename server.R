@@ -5,9 +5,6 @@ library(openxlsx)
 
 shinyServer(function(input, output, session) {
   
-  
-  shinyjs::disable("validate")
-  shinyjs::hide("downloadData")
   ready <- reactiveValues(ok = FALSE)
   
   observeEvent(input$file1, {
@@ -146,7 +143,7 @@ shinyServer(function(input, output, session) {
     is_logged_in<-FALSE
     user_input$authenticated <-DHISLogin(input$server,input$user_name,input$password)
     foo<-getValidOperatingUnits()
-    ous<-setNames(foo$id,foo$name)
+    ous<<-setNames(foo$id,foo$name)
   })   
   
   # password entry UI componenets:
@@ -164,8 +161,10 @@ shinyServer(function(input, output, session) {
     
     if (!ready$ok) {return(NULL)}
     
-    #Lock the UI
+    #Lock the UI and hide download button
     disableUI()
+    shinyjs::hide("downloadData")
+    
     inFile <- input$file1
     messages<-""
     
@@ -190,6 +189,7 @@ shinyServer(function(input, output, session) {
         
       #Reset the button to force upload again
       shinyjs::reset("file1")
+      disableUI()
       
       if (inherits(d, "list")) {
         output$messages <- renderUI({
