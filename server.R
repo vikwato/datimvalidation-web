@@ -164,11 +164,6 @@ shinyServer(function(input, output, session) {
     
     #Lock the UI and hide download button
     disableUI()
-<<<<<<< HEAD
-
-    
-=======
->>>>>>> 3aab81ee3a87590ebf82a8cc7cec5b7964a03632
     inFile <- input$file1
     messages<-""
     
