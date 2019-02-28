@@ -150,8 +150,8 @@ shinyServer(function(input, output, session) {
   #   username and password text fields, login button
   output$uiLogin <- renderUI({
     wellPanel(
-      fluidRow(
-        h4("Welcome to the DATIM Validation tool. Please login with your DATIM credentials:")
+      fluidRow(img(src='pepfar.png', align = "center")),
+        fluidRow(h4("Welcome to the DATIM Validation tool. Please login with your DATIM credentials:")
       ),
       fluidRow(
       textInput("user_name", "User Name:",width = "600px"),
