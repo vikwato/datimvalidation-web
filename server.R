@@ -26,8 +26,6 @@ shinyServer(function(input, output, session) {
     shinyjs::disable("ds_type")
     shinyjs::disable("file1")
     shinyjs::disable("header")
-    shinyjs::disable("validate")
-    shinyjs::disable("downloadData")
   }
   
   enableUI<-function(){
@@ -39,8 +37,6 @@ shinyServer(function(input, output, session) {
     shinyjs::enable("ds_type")
     shinyjs::enable("file1")
     shinyjs::enable("header")
-    #shinyjs::enable("validate")
-    shinyjs::enable("downloadData")
   }
   
   output$ui <- renderUI({
@@ -125,7 +121,7 @@ shinyServer(function(input, output, session) {
             ),
             tags$hr(),
             actionButton("validate","Validate"),
-            downloadButton("downloadData", "Download validation results")
+            uiOutput(outputId = 'downloadData')
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
@@ -168,8 +164,11 @@ shinyServer(function(input, output, session) {
     
     #Lock the UI and hide download button
     disableUI()
+<<<<<<< HEAD
 
     
+=======
+>>>>>>> 3aab81ee3a87590ebf82a8cc7cec5b7964a03632
     inFile <- input$file1
     messages<-""
     
@@ -198,9 +197,8 @@ shinyServer(function(input, output, session) {
       
       if (inherits(d, "list")) {
         output$messages <- renderUI({
-          tags$strong("There were errors while parsing the file. Download the validation results for details")})
-        shinyjs::show("downloadData")
-        enableUI()
+        tags$strong("There were errors while parsing the file. Download the validation results for details")})
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return(d) 
       } else {
         messages<-append("No problems found during file parsing.",messages)
@@ -221,7 +219,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( dup_check ) 
       } else {
         messages<-append("No duplicate records detected.",messages)
@@ -247,7 +245,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( de_check ) 
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
@@ -268,7 +266,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( ds_ou_check ) 
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
@@ -288,7 +286,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        
         return( vt_check ) 
       } else {
         messages<-append("Value types are valid.",messages)
@@ -308,7 +306,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( neg_check )
       } else {
         messages<-append("No negative values found.",messages)
@@ -330,7 +328,7 @@ shinyServer(function(input, output, session) {
           )
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( mech_check ) 
       } else {
         messages<-append("All mechanisms are valid.",messages)
@@ -358,7 +356,7 @@ shinyServer(function(input, output, session) {
           lapply(messages,function(x) tags$li(x))
         })
         enableUI()
-        shinyjs::show("downloadData")
+        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
         return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
       
       else {
@@ -381,6 +379,7 @@ shinyServer(function(input, output, session) {
   output$contents <- renderDataTable({ 
     
     results<-validation_results() 
+    
     if ( inherits(results, "data.frame") ) { results }
     else { NULL }
     })
