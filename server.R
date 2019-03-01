@@ -45,7 +45,7 @@ shinyServer(function(input, output, session) {
       ##### UI code for login page
       fluidPage(
         tags$head(
-          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.1/iframeResizer.contentWindow.min.js",
                       type="text/javascript")
         ),
         fluidRow(
@@ -61,7 +61,7 @@ shinyServer(function(input, output, session) {
     } else {
       fluidPage(
         tags$head(
-          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.1/iframeResizer.contentWindow.min.js",
                       type="text/javascript")
         ),
         tags$head(tags$style(".shiny-notification {
@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton(inputId='datim', label="Back to DATIM", 
                          icon = icon("th"), 
-                         onclick ="window.open('https://dev-de.datim.org/','_blank')")
+                         onclick ="window.open('https://dev-de.datim.org/','_blank').close();")
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
