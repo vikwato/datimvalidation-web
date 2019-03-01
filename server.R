@@ -55,7 +55,8 @@ shinyServer(function(input, output, session) {
                  uiOutput("uiLogin"),
                  uiOutput("pass")
           )
-        )
+        ),
+        HTML('<div data-iframe-height></div>')
       )
     } else {
       fluidPage(
@@ -137,7 +138,8 @@ shinyServer(function(input, output, session) {
             tabPanel("Output", dataTableOutput("contents")),
             tabPanel("Messages",   tags$ul(uiOutput('messages')))
           ))
-        ))
+        ),
+        HTML('<div data-iframe-height></div>'))
   }
 })
   
