@@ -131,7 +131,11 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton("validate","Validate"),
             uiOutput(outputId = 'downloadData'),
-            uiOutput(outputId = 'uploadData')
+            uiOutput(outputId = 'uploadData'),
+            tags$hr(),
+            actionButton(inputId='datim', label="Back to DATIM", 
+                         icon = icon("th"), 
+                         onclick ="window.location.replace('https://dev-de.datim.org/')")
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
