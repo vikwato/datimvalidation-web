@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton(inputId='datim', label="Back to DATIM", 
                          icon = icon("th"), 
-                         onclick ="window.open("https://dev-de.datim.org/","_blank")")
+                         onclick ="window.open('https://dev-de.datim.org/','_blank')")
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
