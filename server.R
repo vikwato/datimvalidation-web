@@ -121,7 +121,8 @@ shinyServer(function(input, output, session) {
             ),
             tags$hr(),
             actionButton("validate","Validate"),
-            uiOutput(outputId = 'downloadData')
+            uiOutput(outputId = 'downloadData'),
+            uiOutput(outputid = 'uploadData')
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
@@ -156,10 +157,19 @@ shinyServer(function(input, output, session) {
     ))
   })
   
+  upload_to_dhis<-function(d) {
+    url<-paste0(getOption("baseurl"),"api/dataValueSets?preheatCache=true")
+    r<-httr::POST(url,
+                  body = jsonlite::toJSON(list(dataValues=d),auto_unbox = TRUE),
+                  httr::content_type_json())
+    return(r)
+  }
+  
   
   validate<-function() {
     
     shinyjs::hide("downloadData")
+    shinyjs::hide("uploadData")
     if (!ready$ok) {return(NULL)}
     
     #Lock the UI and hide download button
@@ -352,22 +362,22 @@ shinyServer(function(input, output, session) {
         })
         enableUI()
         output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
+        output$uploadData <- renderUI({ actionButton("uploadData", "Upload data to DATIM") })
         return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
       
       else {
+        output$uploadData <- renderUI({ actionButton("uploadData", "Upload data to DATIM") })
         messages<-append( "No validation rule violations found", messages)
-        
         output$messages <-renderUI({
           lapply(messages,function(x) tags$li(x))
         })
-        enableUI()
-        return(data.frame(status="OK"))
+        #enableUI()
+        return(d)
       }
     })
     
     
   }
-  
   
   validation_results <- reactive({ validate() })
   
@@ -375,7 +385,8 @@ shinyServer(function(input, output, session) {
     
     results<-validation_results() 
     
-    if ( inherits(results, "data.frame") ) { results }
+    if ( inherits(results, "data.frame") ) { 
+      results }
     else { NULL }
     })
   
@@ -385,4 +396,14 @@ shinyServer(function(input, output, session) {
       openxlsx::write.xlsx(validation_results(), file = file)
     }
   )
+  
+  observeEvent(input$uploadData, {
+    results<-validation_results() 
+    if(inherits(d,"data.frame")) {
+      upload_to_dhis(results)
+    }
+    
+    })  
+  
+  
 })
