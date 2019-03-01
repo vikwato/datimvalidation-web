@@ -399,8 +399,10 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$uploadData, {
     results<-validation_results() 
-    if(inherits(d,"data.frame")) {
-      upload_to_dhis(results)
+    if(inherits(results,"data.frame")) {
+      shinyjs::show("uploadData")
+      r<-upload_to_dhis(results)
+      output$messages <-renderUI({ httr::content(r,"text") })
     }
     
     })  
