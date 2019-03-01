@@ -366,7 +366,9 @@ shinyServer(function(input, output, session) {
         return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
       
       else {
+ 
         output$uploadData <- renderUI({ actionButton("uploadData", "Upload data to DATIM") })
+        shinyjs::show("uploadData")
         messages<-append( "No validation rule violations found", messages)
         output$messages <-renderUI({
           lapply(messages,function(x) tags$li(x))
@@ -398,6 +400,7 @@ shinyServer(function(input, output, session) {
   )
   
   observeEvent(input$uploadData, {
+    
     results<-validation_results() 
     if(inherits(results,"data.frame")) {
       shinyjs::show("uploadData")
