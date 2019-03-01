@@ -122,7 +122,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton("validate","Validate"),
             uiOutput(outputId = 'downloadData'),
-            uiOutput(outputid = 'uploadData')
+            uiOutput(outputId = 'uploadData')
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
