@@ -58,11 +58,11 @@ shinyServer(function(input, output, session) {
         )
       )
     } else {
-      tags$head(
-        tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
-                    type="text/javascript")
-      ),
       fluidPage(
+        tags$head(
+          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+                      type="text/javascript")
+        ),
         tags$head(tags$style(".shiny-notification {
                              position: fixed;
                              top: 10%;
