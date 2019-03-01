@@ -44,6 +44,10 @@ shinyServer(function(input, output, session) {
     if (user_input$authenticated == FALSE) {
       ##### UI code for login page
       fluidPage(
+        tags$head(
+          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+                      type="text/javascript")
+        ),
         fluidRow(
           column(width = 2, offset = 5,
                  br(), br(), br(), br(),
@@ -54,6 +58,10 @@ shinyServer(function(input, output, session) {
         )
       )
     } else {
+      tags$head(
+        tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+                    type="text/javascript")
+      ),
       fluidPage(
         tags$head(tags$style(".shiny-notification {
                              position: fixed;
