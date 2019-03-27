@@ -154,9 +154,9 @@ shinyServer(function(input, output, session) {
       actionButton("login_button", "Log in")
     ))
   })
-
+  
   validate<-function() {
-    
+    shinyjs::hide("downloadData")
     if (!ready$ok) {return(NULL)}
     
     #Lock the UI and hide download button
@@ -330,7 +330,9 @@ shinyServer(function(input, output, session) {
         messages<-append( "No validation rule violations found", messages)
         }
     })
-    
+    if (has_error) {
+      shinyjs::show("downloadData")
+    }
     list(messages=messages,validation_results=vr_results, has_error = has_error)
   }
   
