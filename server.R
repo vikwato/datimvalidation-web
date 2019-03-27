@@ -44,10 +44,6 @@ shinyServer(function(input, output, session) {
     if (user_input$authenticated == FALSE) {
       ##### UI code for login page
       fluidPage(
-        tags$head(
-          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.1/iframeResizer.contentWindow.min.js",
-                      type="text/javascript")
-        ),
         fluidRow(
           column(width = 2, offset = 5,
                  br(), br(), br(), br(),
@@ -55,15 +51,10 @@ shinyServer(function(input, output, session) {
                  uiOutput("uiLogin"),
                  uiOutput("pass")
           )
-        ),
-        HTML('<div data-iframe-height></div>')
+        )
       )
     } else {
       fluidPage(
-        tags$head(
-          tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.0.1/iframeResizer.contentWindow.min.js",
-                      type="text/javascript")
-        ),
         tags$head(tags$style(".shiny-notification {
                              position: fixed;
                              top: 10%;
@@ -131,23 +122,16 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton("validate","Validate"),
             uiOutput(outputId = 'downloadData'),
-            uiOutput(outputId = 'uploadData'),
-            tags$hr(),
-            actionButton(inputId='datim', label="Back to DATIM", 
-                         icon = icon("th"), 
-                         onclick ="window.open('https://dev-de.datim.org/','_blank').close();")
+            tags$hr()
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
-            tabPanel("Output", dataTableOutput("contents")),
             tabPanel("Messages",   tags$ul(uiOutput('messages')))
           ))
-        ),
-        HTML('<div data-iframe-height></div>'))
+        ))
   }
 })
-  
-  
+
   user_input <- reactiveValues(authenticated = FALSE, status = "")
   
   observeEvent(input$login_button, {
@@ -170,37 +154,29 @@ shinyServer(function(input, output, session) {
       actionButton("login_button", "Log in")
     ))
   })
-  
-  upload_to_dhis<-function(d) {
-    url<-paste0(getOption("baseurl"),"api/dataValueSets?preheatCache=true")
-    r<-httr::POST(url,
-                  body = jsonlite::toJSON(list(dataValues=d),auto_unbox = TRUE),
-                  httr::content_type_json())
-    return(r)
-  }
-  
-  
+
   validate<-function() {
     
     shinyjs::hide("downloadData")
-    shinyjs::hide("uploadData")
     if (!ready$ok) {return(NULL)}
     
     #Lock the UI and hide download button
     disableUI()
     inFile <- input$file1
-    messages<-""
     
     if (is.null(inFile)) return(NULL)
     
     messages<-list()
+    vr_results<-list()
+    has_error<-FALSE
     
     withProgress(message = 'Validating file', value = 0,{
       
-      incProgress(0.1, detail = ("Loading metadata"))
-      ds<-getCurrentMERDataSets(type = input$ds_type)
-      incProgress(0.1, detail = ("Parsing data"))
-      d <- 
+    incProgress(0.1, detail = ("Loading metadata"))
+    ds<-getCurrentMERDataSets(type = input$ds_type)
+    incProgress(0.1, detail = ("Parsing data"))
+    
+    d <- 
         datimvalidation::d2Parser(
           filename = inFile$datapath,
           organisationUnit = input$ou,
@@ -217,9 +193,10 @@ shinyServer(function(input, output, session) {
       if (inherits(d, "list")) {
         output$messages <- renderUI({
         tags$strong("There were errors while parsing the file. Download the validation results for details")})
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return(d) 
+        return(NULL)
+        
       } else {
+        
         messages<-append("No problems found during file parsing.",messages)
       }
       
@@ -230,17 +207,14 @@ shinyServer(function(input, output, session) {
       dup_check <- getExactDuplicates(d)
       
       if (inherits(dup_check, "data.frame") & NROW(dup_check) > 0) {
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              paste( NROW(dup_check)," duplicate values found.")
-            )
-          )
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return( dup_check ) 
-      } else {
+        messages <-  append(
+          paste(
+            paste( NROW(dup_check)," duplicate values found.")
+          ),messages )
+        
+        vr_results$duplicates_check<-dup_check
+        has_error<-TRUE
+        } else {
         messages<-append("No duplicate records detected.",messages)
       }
       
@@ -254,39 +228,33 @@ shinyServer(function(input, output, session) {
         ) 
       
       if (inherits(de_check, "data.frame")) {
+        messages<-append(paste(
+          NROW(de_check),
+          "invalid data element/orgunit associations found!"
+        ), messages)
         
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              NROW(de_check),
-              "invalid data element/orgunit associations found!"
-            )
-          )
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return( de_check ) 
+        vr_results$dataelement_disagg_check<-de_check
+        has_error<-TRUE
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
       }
       
-      #Data element disagg check
+      #Data element orgunit check
       incProgress(0.1, detail = ("Checking data element/disagg associations"))
+      
       ds_ou_check <-
         checkDataElementDisaggValidity(d, datasets = ds, return_violations = TRUE)
       
       if (inherits(ds_ou_check, "data.frame")) {
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              NROW(ds_ou_check),
-              "invalid data element/disagg associations found!"
-            )
-          )
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return( ds_ou_check ) 
+        
+        messages <- append(paste(
+          NROW(ds_ou_check),
+          "invalid data element/disagg associations found!"
+        ),
+        messages)
+        
+        vr_results$datasets_orgunit_check<-ds_ou_check
+        has_error<-TRUE
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
       }
@@ -297,16 +265,9 @@ shinyServer(function(input, output, session) {
       vt_check <- checkValueTypeCompliance(d)
       
       if (inherits(vt_check, "data.frame") & NROW(vt_check) > 0) {
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              paste( NROW(vt_check)," invalid values found.")
-            )
-          )
-        })
-        enableUI()
-        
-        return( vt_check ) 
+        messages <-  append( paste( NROW(vt_check)," invalid values found."), messages)
+        vr_results$value_type_compliance<-vt_check
+        has_error<-TRUE
       } else {
         messages<-append("Value types are valid.",messages)
       }
@@ -317,16 +278,9 @@ shinyServer(function(input, output, session) {
       neg_check <- checkNegativeValues(d)
       
       if (inherits(neg_check, "data.frame")) {
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              paste( NROW(neg_check)," negatve values found.")
-            )
-          )
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return( neg_check )
+        output$messages <- append(paste(paste(NROW(neg_check), " negatve values found.")), messages)
+        vr_results$negative_values <- neg_check
+        has_error<-TRUE
       } else {
         messages<-append("No negative values found.",messages)
       }
@@ -335,22 +289,20 @@ shinyServer(function(input, output, session) {
       incProgress(0.1, detail = ("Checking mechanisms."))
       
       mech_check <-
-        checkMechanismValidity(data = d, organisationUnit = input$ou,return_violations=TRUE)
+        checkMechanismValidity(
+          data = d,
+          organisationUnit = input$ou,
+          return_violations = TRUE
+        )
       
       if (inherits(mech_check, "data.frame")) {
-        
-        output$messages <-  renderUI({
-          tags$strong(
-            paste(
-              paste( NROW(mech_check)," invalid mechanisms found.")
-            )
-          )
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        return( mech_check ) 
+        messages <- append(paste(paste(
+          NROW(mech_check), " invalid mechanisms found."
+        )), messages)
+        vr_results$mechanism_check <- mech_check
+        has_error<-TRUE
       } else {
-        messages<-append("All mechanisms are valid.",messages)
+        messages <- append("All mechanisms are valid.", messages)
       }
       
       incProgress(0.1, detail = ("Validating data"))
@@ -364,6 +316,7 @@ shinyServer(function(input, output, session) {
       } else {
         is_parallel<-FALSE
       }
+      
       vr_rules<-validateData(d,organisationUnit = input$ou,
                              datasets = ds,
                              parallel = is_parallel)
@@ -371,58 +324,55 @@ shinyServer(function(input, output, session) {
       #If there are any validation rule violations, put them in the output
       if  ( NROW(vr_rules) > 0 )  {
         messages<-append( paste( NROW(vr_rules)," validation rule violations found!"),messages)
-        output$messages <-renderUI({
-          lapply(messages,function(x) tags$li(x))
-        })
-        enableUI()
-        output$downloadData <- renderUI({ downloadButton("downloadData", "Download validation results") })
-        output$uploadData <- renderUI({ actionButton("uploadData", "Upload data to DATIM") })
-        return( vr_rules[,c("name","ou_name","period","mech_code","formula")] ) } 
-      
-      else {
- 
-        output$uploadData <- renderUI({ actionButton("uploadData", "Upload data to DATIM") })
-        shinyjs::show("uploadData")
+       
+        vr_results$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
+        has_error<-TRUE
+      } else {
         messages<-append( "No validation rule violations found", messages)
-        output$messages <-renderUI({
-          lapply(messages,function(x) tags$li(x))
-        })
-        #enableUI()
-        return(d)
-      }
+        }
     })
     
+    list(messages=messages,validation_results=vr_results, has_error = has_error)
     
   }
   
   validation_results <- reactive({ validate() })
   
-  output$contents <- renderDataTable({ 
-    
-    results<-validation_results() 
-    
-    if ( inherits(results, "data.frame") ) { 
-      results }
-    else { NULL }
-    })
-  
   output$downloadData <- downloadHandler(
     filename = "validation_results.xlsx",
     content = function(file) {
-      openxlsx::write.xlsx(validation_results(), file = file)
+      vr_results <- validation_results() %>% purrr::pluck(.,"vr_results")
+      openxlsx::write.xlsx(vr_results, file = file)
     }
   )
   
-  observeEvent(input$uploadData, {
+  output$messages <- renderUI({
     
-    results<-validation_results() 
-    if(inherits(results,"data.frame")) {
-      shinyjs::show("uploadData")
-      r<-upload_to_dhis(results)
-      output$messages <-renderUI({ httr::content(r,"text") })
+    
+    vr<-validation_results()
+    
+    messages<-NULL
+    if ( is.null(vr)) {
+      return(NULL)
     }
     
-    })  
-  
+    if ( inherits(messages,"error") ) {
+      return( paste0("ERROR! ",vr$message) )
+      
+    } else {
+      
+      messages<-validation_results() %>%   
+        purrr::pluck(., "messages")
+      
+      if (!is.null(messages))  {
+        lapply(messages, function(x)
+          tags$li(x))
+      } else
+      {
+        tags$li("No issues found! Congratulations!")
+      }
+    }
+  })
+})
   
 })
