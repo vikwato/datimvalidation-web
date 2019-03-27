@@ -126,7 +126,8 @@ shinyServer(function(input, output, session) {
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
-            tabPanel("Messages",   tags$ul(uiOutput('messages')))
+            tabPanel("Messages",   tags$ul(uiOutput('messages'))),
+            tabPanel("Output", dataTableOutput("contents"))
           ))
         ))
   }
@@ -332,8 +333,11 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    list(messages=messages,validation_results=vr_results, has_error = has_error)
+    if (length(messages)>0) {
+      shinyjs::show("downloadData")
+    }
     
+    list(messages=messages,validation_results=vr_results, has_error = has_error)
   }
   
   validation_results <- reactive({ validate() })
@@ -345,6 +349,16 @@ shinyServer(function(input, output, session) {
       openxlsx::write.xlsx(vr_results, file = file)
     }
   )
+  
+  output$contents <- renderDataTable({ 
+    
+    results<-validation_results() %>%   
+      purrr::pluck(., "vr_results")
+    
+    if ( inherits(results, "data.frame") ) { 
+      results }
+    else { NULL }
+  })
   
   output$messages <- renderUI({
     
