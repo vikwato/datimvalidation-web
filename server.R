@@ -158,7 +158,6 @@ shinyServer(function(input, output, session) {
 
   validate<-function() {
     
-    shinyjs::hide("downloadData")
     if (!ready$ok) {return(NULL)}
     
     #Lock the UI and hide download button
@@ -333,10 +332,6 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    if (length(messages)>0) {
-      shinyjs::show("downloadData")
-    }
-    
     list(messages=messages,validation_results=vr_results, has_error = has_error)
   }
   
@@ -345,6 +340,7 @@ shinyServer(function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = "validation_results.xlsx",
     content = function(file) {
+      
       vr_results <- validation_results() %>% purrr::pluck(.,"vr_results")
       openxlsx::write.xlsx(vr_results, file = file)
     }
@@ -361,7 +357,6 @@ shinyServer(function(input, output, session) {
   })
   
   output$messages <- renderUI({
-    
     
     vr<-validation_results()
     
