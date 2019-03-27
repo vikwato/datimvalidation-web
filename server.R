@@ -1,7 +1,7 @@
 library(shiny)
 library(shinyjs)
 library(openxlsx)
-
+library(magrittr)
 
 shinyServer(function(input, output, session) {
   
