@@ -121,13 +121,12 @@ shinyServer(function(input, output, session) {
             ),
             tags$hr(),
             actionButton("validate","Validate"),
-            uiOutput(outputId = 'downloadData'),
-            tags$hr()
+            downloadButton("downloadData", "Download report")
           ),
           mainPanel(tabsetPanel(
             type = "tabs",
             tabPanel("Messages",   tags$ul(uiOutput('messages'))),
-            tabPanel("Output", dataTableOutput("contents"))
+            tabPanel("Validation rules", dataTableOutput("contents"))
           ))
         ))
   }
