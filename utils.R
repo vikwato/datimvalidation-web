@@ -18,3 +18,17 @@
     }
   }
   
+  getUserOperatingUnits<-function(uid) {
+    
+    #Global user
+    if ( uid == "ybg3MO3hcf4" ) {
+    getValidOperatingUnits()
+    } else {
+    paste0(paste0(getOption("baseurl"),"api/organisationUnits/",uid,"?fields=name,id")) %>%
+        httr::GET(.) %>% 
+        httr::content(.,"text") %>% 
+        jsonlite::fromJSON(.) %>%
+        as.data.frame(.)
+          
+    }
+  }

@@ -137,7 +137,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in<-FALSE
     user_input$authenticated <-DHISLogin(input$server,input$user_name,input$password)
-    foo<-getValidOperatingUnits()
+    foo<-getUserOperatingUnits(getOption("organisationUnit"))
     ous<<-setNames(foo$id,foo$name)
   })   
   
@@ -191,7 +191,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(d, "list")) {
         output$messages <- renderUI({
-        tags$strong("There were errors while parsing the file. Download the validation results for details")})
+        tags$strong("There were errors while parsing the file. Please check that you have provided the correct paramaters!")})
         return(NULL)
         
       } else {
