@@ -218,7 +218,7 @@ shinyServer(function(input, output, session) {
       }
       
       incProgress(0.1, detail = ("Checking data element/orgunit associations"))
-      de_check <-
+      de_ou_check <-
         checkDataElementOrgunitValidity(
           data = d,
           datasets = ds,
@@ -226,13 +226,13 @@ shinyServer(function(input, output, session) {
           return_violations = TRUE
         ) 
       
-      if (inherits(de_check, "data.frame")) {
+      if (inherits(de_ou_check, "data.frame")) {
         messages<-append(paste(
           NROW(de_check),
           "invalid data element/orgunit associations found!"
         ), messages)
         
-        vr_results$dataelement_disagg_check<-de_check
+        vr_results$dataelement_ou_check<-de_ou_check
         has_error<-TRUE
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
@@ -241,18 +241,18 @@ shinyServer(function(input, output, session) {
       #Data element orgunit check
       incProgress(0.1, detail = ("Checking data element/disagg associations"))
       
-      ds_ou_check <-
+      ds_disagg_check <-
         checkDataElementDisaggValidity(d, datasets = ds, return_violations = TRUE)
       
-      if (inherits(ds_ou_check, "data.frame")) {
+      if (inherits(ds_disagg_check, "data.frame")) {
         
         messages <- append(paste(
-          NROW(ds_ou_check),
+          NROW(ds_disagg_check),
           "invalid data element/disagg associations found!"
         ),
         messages)
         
-        vr_results$datasets_orgunit_check<-ds_ou_check
+        vr_results$datasets_disagg_check<-ds_disagg_check
         has_error<-TRUE
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
