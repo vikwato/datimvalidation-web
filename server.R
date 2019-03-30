@@ -116,7 +116,8 @@ shinyServer(function(input, output, session) {
                 "application/xml",
                 ".csv",
                 ".json",
-                ".xml"
+                ".xml",
+                ".zip"
               )
             ),
             tags$hr(),
@@ -175,6 +176,14 @@ shinyServer(function(input, output, session) {
     ds<-getCurrentMERDataSets(type = input$ds_type)
     incProgress(0.1, detail = ("Parsing data"))
     validation<-list()
+    
+    if  ( input$type == "application/zip" )  {
+      temp_dir<-tempdir()
+      input_file<-unzip(inFile$datapath,exdir = temp_dir)
+    } else {
+      input_file<-inFile$datapath
+    }
+    
     d <- 
         datimvalidation::d2Parser(
           filename = inFile$datapath,
@@ -184,7 +193,7 @@ shinyServer(function(input, output, session) {
           orgUnitIdScheme = input$ou_scheme,
           idScheme = input$id_scheme,
           csv_header = input$header)
-        
+  
       #Reset the button to force upload again
       shinyjs::reset("file1")
       disableUI()
