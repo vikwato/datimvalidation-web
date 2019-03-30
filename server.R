@@ -178,7 +178,7 @@ shinyServer(function(input, output, session) {
     incProgress(0.1, detail = ("Parsing data"))
     validation<-list()
     
-    if  ( input$type == "application/zip" )  {
+    if  ( inFile$type == "application/zip" )  {
       temp_dir<-tempdir()
       input_file<-unzip(inFile$datapath,exdir = temp_dir)
     } else {
