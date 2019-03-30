@@ -174,7 +174,7 @@ shinyServer(function(input, output, session) {
     incProgress(0.1, detail = ("Loading metadata"))
     ds<-getCurrentMERDataSets(type = input$ds_type)
     incProgress(0.1, detail = ("Parsing data"))
-    
+    validation<-list()
     d <- 
         datimvalidation::d2Parser(
           filename = inFile$datapath,
@@ -211,7 +211,8 @@ shinyServer(function(input, output, session) {
             paste( NROW(dup_check)," duplicate values found.")
           ),messages )
         
-        d$validation$duplicates_check<-dup_check
+        validation$duplicates_check<-dup_check
+        
         has_error<-TRUE
         } else {
         messages<-append("No duplicate records detected.",messages)
@@ -232,7 +233,8 @@ shinyServer(function(input, output, session) {
           "invalid data element/orgunit associations found!"
         ), messages)
         
-        d$validation$dataelement_ou_check<-de_ou_check
+        validation$dataelement_ou_check<-de_ou_check
+        
         has_error<-TRUE
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
@@ -252,7 +254,7 @@ shinyServer(function(input, output, session) {
         ),
         messages)
         
-        d$validation$datasets_disagg_check<-ds_disagg_check
+        validation$datasets_disagg_check<-ds_disagg_check
         has_error<-TRUE
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
@@ -265,7 +267,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(vt_check, "data.frame") & NROW(vt_check) > 0) {
         messages <-  append( paste( NROW(vt_check)," invalid values found."), messages)
-        d$validation$value_type_compliance<-vt_check
+        validation$value_type_compliance<-vt_check
         has_error<-TRUE
       } else {
         messages<-append("Value types are valid.",messages)
@@ -278,7 +280,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(neg_check, "data.frame")) {
         output$messages <- append(paste(paste(NROW(neg_check), " negatve values found.")), messages)
-        d$validation$negative_values <- neg_check
+        validation$negative_values <- neg_check
         has_error<-TRUE
       } else {
         messages<-append("No negative values found.",messages)
@@ -298,7 +300,7 @@ shinyServer(function(input, output, session) {
         messages <- append(paste(paste(
           NROW(mech_check), " invalid mechanisms found."
         )), messages)
-        d$validation$mechanism_check <- mech_check
+        validation$mechanism_check <- mech_check
         has_error<-TRUE
       } else {
         messages <- append("All mechanisms are valid.", messages)
@@ -324,7 +326,7 @@ shinyServer(function(input, output, session) {
       if  ( NROW(vr_rules) > 0 )  {
         messages<-append( paste( NROW(vr_rules)," validation rule violations found!"),messages)
        
-        d$validation$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
+        validation$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
         has_error<-TRUE
       } else {
         messages<-append( "No validation rule violations found", messages)
@@ -334,9 +336,11 @@ shinyServer(function(input, output, session) {
       shinyjs::show("downloadData")
     }
     
+    d$data <- d
     d$messages <- messages
     d$has_error <-has_error
-
+    d$validation <- validation
+    
     d
   }
   
@@ -353,9 +357,10 @@ shinyServer(function(input, output, session) {
   
   output$contents <- renderDataTable({ 
     
-    results<-validation_results() %>%   
-      purrr::pluck(., "vr_results") %>% 
-      purrr::pluck(., "validation_rules")
+    results<-validation_results() %>% 
+      purrr::pluck(., "validation_rules") %>% 
+      purrr::pluck(., "vr_results") 
+
 
     if ( inherits(results, "data.frame") ) { 
       results }
