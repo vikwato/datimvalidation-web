@@ -211,7 +211,7 @@ shinyServer(function(input, output, session) {
             paste( NROW(dup_check)," duplicate values found.")
           ),messages )
         
-        vr_results$duplicates_check<-dup_check
+        d$validation$duplicates_check<-dup_check
         has_error<-TRUE
         } else {
         messages<-append("No duplicate records detected.",messages)
@@ -232,7 +232,7 @@ shinyServer(function(input, output, session) {
           "invalid data element/orgunit associations found!"
         ), messages)
         
-        vr_results$dataelement_ou_check<-de_ou_check
+        d$validation$dataelement_ou_check<-de_ou_check
         has_error<-TRUE
       } else {
         messages<-append("Data element/orgunit associations are valid.", messages)
@@ -252,7 +252,7 @@ shinyServer(function(input, output, session) {
         ),
         messages)
         
-        vr_results$datasets_disagg_check<-ds_disagg_check
+        d$validation$datasets_disagg_check<-ds_disagg_check
         has_error<-TRUE
       } else {
         messages<-append("Data element/disagg associations are valid.",messages)
@@ -265,7 +265,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(vt_check, "data.frame") & NROW(vt_check) > 0) {
         messages <-  append( paste( NROW(vt_check)," invalid values found."), messages)
-        vr_results$value_type_compliance<-vt_check
+        d$validation$value_type_compliance<-vt_check
         has_error<-TRUE
       } else {
         messages<-append("Value types are valid.",messages)
@@ -278,7 +278,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(neg_check, "data.frame")) {
         output$messages <- append(paste(paste(NROW(neg_check), " negatve values found.")), messages)
-        vr_results$negative_values <- neg_check
+        d$validation$negative_values <- neg_check
         has_error<-TRUE
       } else {
         messages<-append("No negative values found.",messages)
@@ -298,7 +298,7 @@ shinyServer(function(input, output, session) {
         messages <- append(paste(paste(
           NROW(mech_check), " invalid mechanisms found."
         )), messages)
-        vr_results$mechanism_check <- mech_check
+        d$validation$mechanism_check <- mech_check
         has_error<-TRUE
       } else {
         messages <- append("All mechanisms are valid.", messages)
@@ -324,7 +324,7 @@ shinyServer(function(input, output, session) {
       if  ( NROW(vr_rules) > 0 )  {
         messages<-append( paste( NROW(vr_rules)," validation rule violations found!"),messages)
        
-        vr_results$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
+        d$validation$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
         has_error<-TRUE
       } else {
         messages<-append( "No validation rule violations found", messages)
@@ -333,7 +333,11 @@ shinyServer(function(input, output, session) {
     if (has_error) {
       shinyjs::show("downloadData")
     }
-    list(messages=messages,validation_results=vr_results, has_error = has_error)
+    
+    d$messages <- messages
+    d$has_error <-has_error
+
+    d
   }
   
   validation_results <- reactive({ validate() })
@@ -342,7 +346,7 @@ shinyServer(function(input, output, session) {
     filename = "validation_results.xlsx",
     content = function(file) {
       
-      vr_results <- validation_results() %>% purrr::pluck(.,"vr_results")
+      vr_results <- validation_results() %>% purrr::pluck(.,"validation")
       openxlsx::write.xlsx(vr_results, file = file)
     }
   )
@@ -350,8 +354,9 @@ shinyServer(function(input, output, session) {
   output$contents <- renderDataTable({ 
     
     results<-validation_results() %>%   
-      purrr::pluck(., "vr_results")
-    
+      purrr::pluck(., "vr_results") %>% 
+      purrr::pluck(., "validation_rules")
+
     if ( inherits(results, "data.frame") ) { 
       results }
     else { NULL }
@@ -362,6 +367,7 @@ shinyServer(function(input, output, session) {
     vr<-validation_results()
     
     messages<-NULL
+    
     if ( is.null(vr)) {
       return(NULL)
     }
