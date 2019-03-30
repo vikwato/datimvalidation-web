@@ -114,6 +114,7 @@ shinyServer(function(input, output, session) {
                 "text/comma-separated-values,text/plain",
                 "application/json",
                 "application/xml",
+                "application/zip",
                 ".csv",
                 ".json",
                 ".xml",
