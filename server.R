@@ -336,12 +336,7 @@ shinyServer(function(input, output, session) {
       shinyjs::show("downloadData")
     }
     
-    d$data <- d
-    d$messages <- messages
-    d$has_error <-has_error
-    d$validation <- validation
-    
-    d
+    list(data=d,messages=messages,validation=validation,has_error=has_error)
   }
   
   validation_results <- reactive({ validate() })
@@ -358,8 +353,8 @@ shinyServer(function(input, output, session) {
   output$contents <- renderDataTable({ 
     
     results<-validation_results() %>% 
-      purrr::pluck(., "validation_rules") %>% 
-      purrr::pluck(., "vr_results") 
+      purrr::pluck(., "validation") %>% 
+      purrr::pluck(., "validation_rules") 
 
 
     if ( inherits(results, "data.frame") ) { 
@@ -369,7 +364,7 @@ shinyServer(function(input, output, session) {
   
   output$messages <- renderUI({
     
-    vr<-validation_results()
+    vr<-validation_results() 
     
     messages<-NULL
     
@@ -377,12 +372,12 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
     
-    if ( inherits(messages,"error") ) {
+    if ( inherits(vr,"error") ) {
       return( paste0("ERROR! ",vr$message) )
       
     } else {
       
-      messages<-validation_results() %>%   
+      messages<-vr %>%   
         purrr::pluck(., "messages")
       
       if (!is.null(messages))  {
