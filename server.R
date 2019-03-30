@@ -177,19 +177,17 @@ shinyServer(function(input, output, session) {
     ds<-getCurrentMERDataSets(type = input$ds_type)
     incProgress(0.1, detail = ("Parsing data"))
     validation<-list()
-    
-    cat(inFile$type)
-    
+
     if  ( inFile$type == "application/zip" )  {
       temp_dir<-tempdir()
-      input_file<-unzip(inFile$datapath,exdir = temp_dir)
+      input_file<-unzip(inFile$datapath, exdir = temp_dir)
     } else {
       input_file<-inFile$datapath
     }
     
     d <- 
         datimvalidation::d2Parser(
-          filename = inFile$datapath,
+          filename = input_file,
           organisationUnit = input$ou,
           type = input$type,
           dataElementIdScheme = input$de_scheme,
