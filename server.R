@@ -185,16 +185,23 @@ shinyServer(function(input, output, session) {
       input_file<-inFile$datapath
     }
     
-    d <- 
-        datimvalidation::d2Parser(
+    d <-  tryCatch(
+        {datimvalidation::d2Parser(
           filename = input_file,
           organisationUnit = input$ou,
           type = input$type,
           dataElementIdScheme = input$de_scheme,
           orgUnitIdScheme = input$ou_scheme,
           idScheme = input$id_scheme,
-          csv_header = input$header)
-  
+          csv_header = input$header)},
+        error = function(e){
+          return(e)
+        },
+        warning = warning(w){
+          error("Escalated warning to error: ", conditionMessage(w))
+        }
+    )
+
       #Reset the button to force upload again
       shinyjs::reset("file1")
       disableUI()
@@ -208,7 +215,6 @@ shinyServer(function(input, output, session) {
         
         messages<-append("No problems found during file parsing.",messages)
       }
-      
       
       #Duplicate check
       incProgress(0.1, detail = ("Checking for duplicate records."))
@@ -276,7 +282,7 @@ shinyServer(function(input, output, session) {
       vt_check <- checkValueTypeCompliance(d)
       
       if (inherits(vt_check, "data.frame") & NROW(vt_check) > 0) {
-        messages <-  append( paste( NROW(vt_check)," invalid values found."), messages)
+        messages <-  append( paste( "ERROR! :", NROW(vt_check)," invalid values found."), messages)
         validation$value_type_compliance<-vt_check
         has_error<-TRUE
       } else {
@@ -289,7 +295,7 @@ shinyServer(function(input, output, session) {
       neg_check <- checkNegativeValues(d)
       
       if (inherits(neg_check, "data.frame")) {
-        output$messages <- append(paste(paste(NROW(neg_check), " negatve values found.")), messages)
+        messages <- append(paste("ERROR! :", NROW(neg_check), " negatve values found."), messages)
         validation$negative_values <- neg_check
         has_error<-TRUE
       } else {
@@ -307,9 +313,9 @@ shinyServer(function(input, output, session) {
         )
       
       if (inherits(mech_check, "data.frame")) {
-        messages <- append(paste(paste(
+        messages <- append(paste( "ERROR! :",
           NROW(mech_check), " invalid mechanisms found."
-        )), messages)
+        ), messages)
         validation$mechanism_check <- mech_check
         has_error<-TRUE
       } else {
@@ -334,7 +340,7 @@ shinyServer(function(input, output, session) {
       
       #If there are any validation rule violations, put them in the output
       if  ( NROW(vr_rules) > 0 )  {
-        messages<-append( paste( NROW(vr_rules)," validation rule violations found!"),messages)
+        messages<-append( paste("ERROR! :",  NROW(vr_rules)," validation rule violations found!"),messages)
        
         validation$validation_rules <- vr_rules[,c("name","ou_name","period","mech_code","formula")]
         has_error<-TRUE
