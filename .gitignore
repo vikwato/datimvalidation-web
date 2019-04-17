@@ -1,5 +1,10 @@
 .Rproj.user
 .Rhistory
 .RData
-.Ruserdata
-dish.json
+inst/doc
+.idea
+*.*~
+.R_Cache
+*.Rproj
+packrat/lib*/
+packrat/src/
