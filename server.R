@@ -185,30 +185,31 @@ shinyServer(function(input, output, session) {
       input_file<-inFile$datapath
     }
     
-    d <-  tryCatch(
-        {datimvalidation::d2Parser(
-          filename = input_file,
-          organisationUnit = input$ou,
-          type = input$type,
-          dataElementIdScheme = input$de_scheme,
-          orgUnitIdScheme = input$ou_scheme,
-          idScheme = input$id_scheme,
-          csv_header = input$header)},
-        error = function(e){
-          return(e)
-        },
-        warning = warning(w){
-          error("Escalated warning to error: ", conditionMessage(w))
-        }
-    )
+    d <-  tryCatch({
+      datimvalidation::d2Parser(
+        filename = input_file,
+        organisationUnit = input$ou,
+        type = input$type,
+        dataElementIdScheme = input$de_scheme,
+        orgUnitIdScheme = input$ou_scheme,
+        idScheme = input$id_scheme,
+        csv_header = input$header
+      )
+    },
+    error = function(e) {
+      return(e)
+    },
+    warning = function(w) {
+      list(paste("Escalated warning to error: ", conditionMessage(w)))
+    })
 
       #Reset the button to force upload again
       shinyjs::reset("file1")
       disableUI()
       
       if (inherits(d, "list")) {
-        output$messages <- renderUI({
-        tags$strong("There were errors while parsing the file. Please check that you have provided the correct paramaters!")})
+        messages <- append( "ERROR! : There were errors while parsing the file. Please check that you have provided the correct paramaters!", messages)
+        messages <- append( d, messages)
         return(NULL)
         
       } else {
