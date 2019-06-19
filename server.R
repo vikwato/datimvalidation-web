@@ -3,6 +3,7 @@ library(shinyjs)
 library(openxlsx)
 library(magrittr)
 
+
 shinyServer(function(input, output, session) {
   
   ready <- reactiveValues(ok = FALSE)
