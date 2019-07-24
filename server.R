@@ -246,7 +246,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(de_ou_check, "data.frame")) {
         messages<-append(paste(
-          NROW(de_check),
+          NROW(de_ou_check),
           "invalid data element/orgunit associations found!"
         ), messages)
         
