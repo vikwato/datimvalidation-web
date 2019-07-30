@@ -229,7 +229,7 @@ shinyServer(function(input, output, session) {
         #Record check
         incProgress(0.1, detail = ("Checking records: "))
         
-        zero_check<-sprintf("%1.2f%%", sum( d$value == "0") / NROW(d) * 100 )
+        zero_check<-sprintf("%1.2f%%", sum( d$value == 0) / NROW(d) * 100 )
         messages <-  append(
           paste(
             paste( "Records found: ", NROW(d), " records found of which ", zero_check, " were zeros.")
