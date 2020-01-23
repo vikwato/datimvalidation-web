@@ -218,6 +218,24 @@ shinyServer(function(input, output, session) {
         messages<-append("No problems found during file parsing.",messages)
       }
       
+      #Period check
+      incProgress(0.1, detail = ("Checking periods."))
+      
+        messages <-  append(
+          paste(
+            paste( "Periods found: ", paste(unique(d$period),sep="",collapse=","))
+          ),messages )
+        
+        #Record check
+        incProgress(0.1, detail = ("Checking records: "))
+        
+        zero_check<-sprintf("%1.2f%%",  ( sum(as.character(d$value) == "0") / NROW(d) )  * 100 )
+        
+        messages <-  append(
+          paste(
+            paste( "Records found: ", NROW(d), " records found of which ", zero_check, " were zeros.")
+          ),messages )
+        
       #Duplicate check
       incProgress(0.1, detail = ("Checking for duplicate records."))
       
@@ -247,7 +265,7 @@ shinyServer(function(input, output, session) {
       
       if (inherits(de_ou_check, "data.frame")) {
         messages<-append(paste(
-          NROW(de_check),
+          NROW(de_ou_check),
           "invalid data element/orgunit associations found!"
         ), messages)
         
